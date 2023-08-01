@@ -15,20 +15,6 @@ export default function Navigasi() {
 
   const router = useRouter();
 
-  useEffect(() => {
-    let lang = null;
-    if (!cookie) {
-      const cookie = parseCookies();
-      lang = cookie.lang || null;
-      setCookies(cookie);
-    }
-    if (lang === "en" || lang === null) {
-      setLang("en");
-    } else if (lang === "id") {
-      setLang("id");
-    }
-  }, []);
-
   const handleFormSubmission = (inputValue) => {
     router.push(`/${lang}/search/${encodeURIComponent(inputValue)}`);
   };

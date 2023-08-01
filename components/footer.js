@@ -16,21 +16,6 @@ function Footer() {
 
   const router = useRouter();
 
-  useEffect(() => {
-    let lang = null;
-    if (!cookie) {
-      const cookie = parseCookies();
-      lang = cookie.lang || null;
-      setCookies(cookie);
-    }
-    if (lang === "en" || lang === null) {
-      setLang("en");
-      setChecked(false);
-    } else if (lang === "id") {
-      setLang("id");
-      setChecked(true);
-    }
-  }, []);
 
   function switchLang() {
     setChecked(!checked);

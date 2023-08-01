@@ -9,19 +9,7 @@ export default function Custom404() {
   const [lang, setLang] = useState("en");
   const [cookie, setCookies] = useState(null);
 
-  useEffect(() => {
-    let lang = null;
-    if (!cookie) {
-      const cookie = parseCookies();
-      lang = cookie.lang || null;
-      setCookies(cookie);
-    }
-    if (lang === "en" || lang === null) {
-      setLang("en");
-    } else if (lang === "id") {
-      setLang("id");
-    }
-  }, []);
+ 
   return (
     <>
       <Head>

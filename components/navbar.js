@@ -23,20 +23,7 @@ function Navbar(props) {
     setFade(false);
   };
 
-  useEffect(() => {
-    let lang = null;
-    if (!cookie) {
-      const cookie = parseCookies();
-      lang = cookie.lang || null;
-      setCookies(cookie);
-    }
-    if (lang === "en" || lang === null) {
-      setLang("en");
-    } else if (lang === "id") {
-      setLang("id");
-    }
-  }, []);
-
+ 
   // console.log(session.user?.image);
   useEffect(() => {
     if (data) {

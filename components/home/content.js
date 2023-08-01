@@ -25,26 +25,7 @@ export default function Content({ ids, section, data, og, userName }) {
 
   const [lang, setLang] = useState("en");
 
-  useEffect(() => {
-    const click = localStorage.getItem("clicked");
-
-    if (click) {
-      setClicked(JSON.parse(click));
-    }
-
-    let lang = null;
-    if (!cookie) {
-      const cookie = parseCookies();
-      lang = cookie.lang || null;
-      setCookie(cookie);
-    }
-    if (lang === "en" || lang === null) {
-      setLang("en");
-    } else if (lang === "id") {
-      setLang("id");
-    }
-  }, []);
-
+ 
   const handleMouseDown = (e) => {
     setIsDragging(true);
     setStartX(e.pageX - containerRef.current.offsetLeft);

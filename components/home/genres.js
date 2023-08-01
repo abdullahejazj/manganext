@@ -35,19 +35,6 @@ export default function Genres() {
   const [lang, setLang] = useState("en");
   const [cookie, setCookie] = useState(null);
 
-  useEffect(() => {
-    let lang = null;
-    if (!cookie) {
-      const cookie = parseCookies();
-      lang = cookie.lang || null;
-      setCookie(cookie);
-    }
-    if (lang === "en" || lang === null) {
-      setLang("en");
-    } else if (lang === "id") {
-      setLang("id");
-    }
-  }, []);
   return (
     <div className="antialiased">
       <div className="flex items-center justify-between lg:justify-normal lg:gap-3 px-5">
