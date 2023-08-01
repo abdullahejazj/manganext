@@ -43,7 +43,7 @@ export default function Navigasi() {
   return (
     <>
       {/* NAVBAR PC */}
-      <div className="flex items-center justify-center">
+      {/* <div className="flex items-center justify-center">
         <div className="flex w-full items-center justify-between px-5 lg:mx-[94px]">
           <div className="flex items-center lg:gap-16 lg:pt-7">
             <Link
@@ -67,29 +67,7 @@ export default function Navigasi() {
                 <Link href="/en/search/anime">Anime</Link>
               </li>
 
-              {status === "loading" ? (
-                <li>Loading...</li>
-              ) : (
-                <>
-                  {!sessions && (
-                    <li>
-                      <button
-                        onClick={() => signIn("AniListProvider")}
-                        className="ring-1 ring-action font-karla font-bold px-2 py-1 rounded-md"
-                      >
-                        Sign in
-                      </button>
-                    </li>
-                  )}
-                  {sessions && (
-                    <li className="text-center">
-                      <Link href={`/en/profile/${sessions?.user.name}`}>
-                        My List
-                      </Link>
-                    </li>
-                  )}
-                </>
-              )}
+             
             </ul>
           </div>
           <div className="relative flex lg:scale-75 scale-[65%] items-center mb-7 lg:mb-1">
@@ -106,7 +84,7 @@ export default function Navigasi() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </>
   );
 }

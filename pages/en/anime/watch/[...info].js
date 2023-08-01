@@ -207,7 +207,7 @@ export default function Info({ sessions, id, aniId, provider, proxy, api }) {
 
     mediaSession.metadata = new MediaMetadata({
       title: playingTitle,
-      artist: `Moopa ${
+      artist: ` ${
         playingTitle === data?.title?.romaji
           ? "- Episode " + playingEpisode
           : `- ${data?.title?.romaji || data?.title?.english}`

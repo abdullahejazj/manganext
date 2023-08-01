@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useContext } from "react";
 import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 import Image from "next/image";
 import { parseCookies } from "nookies";
+import DataContext from "../context/DataContext";
 
 function Navbar(props) {
   const { data: session, status } = useSession();
   const [isVisible, setIsVisible] = useState(false);
   const [fade, setFade] = useState(false);
-
+  const data = useContext(DataContext);
   const [lang, setLang] = useState("en");
   const [cookie, setCookies] = useState(null);
 
@@ -37,12 +38,16 @@ function Navbar(props) {
   }, []);
 
   // console.log(session.user?.image);
-
+  useEffect(() => {
+    if (data) {
+      document.title = data.header_title ? data.header_title : "Loading ...."; // Set the document title
+    }
+  }, [data]);
   return (
     <header className={`${props.className}`}>
       <div className="flex h-16 w-auto items-center justify-between px-5 lg:mx-auto lg:w-[80%] lg:px-0 text-[#dbdcdd]">
         <div className="pb-2 font-outfit text-4xl font-semibold lg:block text-white">
-          <Link href={`/${lang}/`}>moopa</Link>
+          <Link href={`/en/search/trending/`}>{data?.website_title}</Link>
         </div>
 
         {/* Mobile Hamburger */}
@@ -164,43 +169,7 @@ function Navbar(props) {
                     search
                   </Link>
                 </button>
-                {session ? (
-                  <button
-                    onClick={() => signOut("AniListProvider")}
-                    className="group flex gap-[1.5px] flex-col items-center "
-                  >
-                    <div>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 96 960 960"
-                        className="group-hover:fill-action w-6 h-6 fill-txt"
-                      >
-                        <path d="M186.666 936q-27 0-46.833-19.833T120 869.334V282.666q0-27 19.833-46.833T186.666 216H474v66.666H186.666v586.668H474V936H186.666zm470.668-176.667l-47-48 102-102H370v-66.666h341.001l-102-102 46.999-48 184 184-182.666 182.666z"></path>
-                      </svg>
-                    </div>
-                    <h1 className="font-karla font-bold text-[#8BA0B2] group-hover:text-action">
-                      logout
-                    </h1>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => signIn("AniListProvider")}
-                    className="group flex gap-[1.5px] flex-col items-center "
-                  >
-                    <div>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 96 960 960"
-                        className="group-hover:fill-action w-6 h-6 fill-txt mr-2"
-                      >
-                        <path d="M486 936v-66.666h287.334V282.666H486V216h287.334q27 0 46.833 19.833T840 282.666v586.668q0 27-19.833 46.833T773.334 936H486zm-78.666-176.667l-47-48 102-102H120v-66.666h341l-102-102 47-48 184 184-182.666 182.666z"></path>
-                      </svg>
-                    </div>
-                    <h1 className="font-karla font-bold text-[#8BA0B2] group-hover:text-action">
-                      login
-                    </h1>
-                  </button>
-                )}
+             
               </div>
               <button onClick={handleHideClick}>
                 <svg
@@ -237,75 +206,34 @@ function Navbar(props) {
           <ul className="hidden gap-10 font-roboto text-md lg:flex items-center relative">
             <li>
               <Link
-                href={`/${lang}/`}
+                href={`/en/search/trending/`}
                 className="p-2 transition-all duration-100 hover:text-orange-600"
               >
-                home
+                Home
               </Link>
             </li>
             <li>
               <Link
-                href={`/${lang}/about`}
+                href={`/${lang}/search/trending`}
                 className="p-2 transition-all duration-100 hover:text-orange-600"
               >
-                about
+                Trending
               </Link>
             </li>
             <li>
               <Link
-                href={`/${lang}/search/anime`}
+                href={`/${lang}/search/popular`}
                 className="p-2 transition-all duration-100 hover:text-orange-600"
               >
-                search
+                Popular
               </Link>
             </li>
-            {status === "loading" ? (
-              <li>Loading...</li>
-            ) : (
-              <>
-                {!session && (
-                  <li>
-                    <button
-                      onClick={() => signIn("AniListProvider")}
-                      className="ring-1 ring-action font-karla font-bold px-2 py-1 rounded-md"
-                    >
-                      Sign in
-                    </button>
-                  </li>
-                )}
-                {session && (
-                  <li className="flex items-center justify-center group ">
-                    <button>
-                      <Image
-                        src={session?.user.image.large}
-                        alt="imagine"
-                        width={500}
-                        height={500}
-                        className="object-cover h-10 w-10 rounded-full"
-                      />
-                    </button>
-                    <div className="absolute z-50 w-28 text-center -bottom-20 text-white shadow-2xl opacity-0 bg-secondary p-1 py-2 rounded-md font-karla font-light invisible group-hover:visible group-hover:opacity-100 duration-300 transition-all grid place-items-center gap-1">
-                      <Link
-                        href={`/${lang}/profile/${session?.user.name}`}
-                        className="hover:text-action"
-                      >
-                        Profile
-                      </Link>
-                      <button
-                        onClick={() => signOut({ callbackUrl: "/" })}
-                        className="hover:text-action"
-                      >
-                        Log out
-                      </button>
-                    </div>
-                    {/* My List */}
-                  </li>
-                )}
-              </>
-            )}
+       
           </ul>
         </nav>
+     
       </div>
+     
     </header>
   );
 }

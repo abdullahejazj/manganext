@@ -1,383 +1,330 @@
-import { aniListData } from "../../lib/anilist/AniList";
-import React, { useState, useEffect } from "react";
-import Head from "next/head";
+import { useEffect, useRef, useState,useContext } from "react";
+import { AnimatePresence, motion as m } from "framer-motion";
+import Skeleton from "react-loading-skeleton";
+import { useRouter } from "next/router";
 import Link from "next/link";
+import Navbar from "../../components/navbar";
+import Head from "next/head";
 import Footer from "../../components/footer";
-import Image from "next/image";
-import Content from "../../components/home/content";
 
-import { motion } from "framer-motion";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { aniAdvanceSearch } from "../../lib/anilist/aniAdvanceSearch";
+import DataContext from "../../context/DataContext";
 
-import { signOut } from "next-auth/react";
-import { useAniList } from "../../lib/anilist/useAnilist";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../api/auth/[...nextauth]";
-import SearchBar from "../../components/searchBar";
-import Genres from "../../components/home/genres";
-import Schedule from "../../components/home/schedule";
-import getUpcomingAnime from "../../lib/anilist/getUpcomingAnime";
-import { useCountdown } from "../../lib/useCountdownSeconds";
+const genre = [
+  "Action",
+  "Adventure",
+  "Comedy",
+  "Drama",
+  "Ecchi",
+  "Fantasy",
+  "Horror",
+  "Mahou Shoujo",
+  "Mecha",
+  "Music",
+  "Mystery",
+  "Psychological",
+  "Romance",
+  "Sci-Fi",
+  "Slice of Life",
+  "Sports",
+  "Supernatural",
+  "Thriller",
+];
 
-import Navigasi from "../../components/home/staticNav";
-import MobileNav from "../../components/home/mobileNav";
+const types = [ "MANGA"];
 
-// Filter schedules for each day
-// const filterByCountryOfOrigin = (schedule, country) => {
-//   const filteredSchedule = {};
-//   for (const day in schedule) {
-//     filteredSchedule[day] = schedule[day].filter(
-//       (anime) => anime.countryOfOrigin === country
-//     );
-//   }
-//   return filteredSchedule;
-// };
+const sorts = [
+  { name: "Title", value: "TITLE_ROMAJI" },
+  { name: "Popularity", value: "POPULARITY_DESC" },
+  { name: "Trending", value: "TRENDING_DESC" },
+  { name: "Favourites", value: "FAVOURITES_DESC" },
+  { name: "Average Score", value: "SCORE_DESC" },
+  { name: "Date Added", value: "ID_DESC" },
+  { name: "Release Date", value: "START_DATE_DESC" },
+];
 
-export default function Home({ detail, populars, sessions, upComing }) {
-  const { media: current } = useAniList(sessions, { stats: "CURRENT" });
-  const { media: plan } = useAniList(sessions, { stats: "PLANNING" });
-  const { media: release } = useAniList(sessions);
+export default function Index() {
+  const router = useRouter();
+  const dataapi = useContext(DataContext);
+  const [data, setData] = useState();
+  const [loading, setLoading] = useState(true);
+console.log("data",data)
+  let hasil = null;
+  let tipe = "ANIME";
+  let s = undefined;
+  let y = NaN;
+  let gr = undefined;
 
-  const [schedules, setSchedules] = useState(null);
+  const query = router.query;
+  gr = query.genres;
 
-  const [anime, setAnime] = useState([]);
+  if (query.param !== "anime" && query.param !== "manga") {
+    hasil = query.param;
+  } else if (query.param === "anime") {
+    hasil = null;
+    tipe = "ANIME";
+    if (
+      query.season !== "WINTER" &&
+      query.season !== "SPRING" &&
+      query.season !== "SUMMER" &&
+      query.season !== "FALL"
+    ) {
+      s = undefined;
+      y = NaN;
+    } else {
+      s = query.season;
+      y = parseInt(query.seasonYear);
+    }
+  } else if (query.param === "manga") {
+    hasil = null;
+    tipe = "MANGA";
+    if (
+      query.season !== "WINTER" &&
+      query.season !== "SPRING" &&
+      query.season !== "SUMMER" &&
+      query.season !== "FALL"
+    ) {
+      s = undefined;
+      y = NaN;
+    } else {
+      s = query.season;
+      y = parseInt(query.seasonYear);
+    }
+  }
 
-  const update = () => {
-    setAnime((prevAnime) => prevAnime.slice(1));
+  // console.log(tags);
+
+  const [search, setQuery] = useState(hasil);
+  const [type, setSelectedType] = useState(tipe);
+  // const [genres, setSelectedGenre] = useState();
+  const [sort, setSelectedSort] = useState();
+
+  const [isVisible, setIsVisible] = useState(false);
+
+  const inputRef = useRef(null);
+
+  const [page, setPage] = useState(1);
+  const [nextPage, setNextPage] = useState(true);
+
+  async function advance() {
+    setLoading(true);
+    const data = await aniAdvanceSearch({
+      search: search,
+      type: type,
+      genres: gr,
+      page: page,
+      sort: sort,
+      season: s,
+      seasonYear: y,
+    });
+    if (data?.media?.length === 0) {
+      setNextPage(false);
+    } else if (data !== null && page > 1) {
+      setData((prevData) => {
+        return [...(prevData ?? []), ...data?.media];
+      });
+      setNextPage(data?.pageInfo.hasNextPage);
+    } else {
+      setData(data?.media);
+    }
+    setNextPage(data?.pageInfo.hasNextPage);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    setData(null);
+    setPage(1);
+    setNextPage(true);
+    advance();
+  }, [search, type, sort, s, y, gr]);
+
+  useEffect(() => {
+    advance();
+  }, [page]);
+
+  useEffect(() => {
+    function handleScroll() {
+      if (page > 10 || !nextPage) {
+        window.removeEventListener("scroll", handleScroll);
+        return;
+      }
+
+      if (
+        window.innerHeight + window.pageYOffset >=
+        document.body.offsetHeight - 3
+      ) {
+        setPage((prevPage) => prevPage + 1);
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [page, nextPage]);
+
+  const handleKeyDown = async (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      const inputValue = event.target.value;
+      if (inputValue === "") {
+        setQuery(null);
+      } else {
+        setQuery(inputValue);
+      }
+    }
   };
 
-  const [days, hours, minutes, seconds] = useCountdown(
-    anime[0]?.nextAiringEpisode?.airingAt * 1000 || Date.now(),
-    update
-  );
+  function trash() {
+    setQuery(null);
+    inputRef.current.value = "";
+    // setSelectedGenre(null);
+    setSelectedSort(["POPULARITY_DESC"]);
+    router.push(`/en/search/${tipe.toLocaleLowerCase()}`);
+  }
 
-  useEffect(() => {
-    if (upComing && upComing.length > 0) {
-      setAnime(upComing);
-    }
-  }, [upComing]);
+  function handleVisible() {
+    setIsVisible(!isVisible);
+  }
 
-  useEffect(() => {
-    const getSchedule = async () => {
-      const res = await fetch(`https://ruka.moopa.live/api/schedules`);
-      const data = await res.json();
-      setSchedules(data);
-    };
-    getSchedule();
-  }, []);
+  function handleTipe(e) {
+    setSelectedType(e.target.value);
+    router.push(`/en/search/${e.target.value.toLowerCase()}`);
+  }
 
-  const [releaseData, setReleaseData] = useState([]);
-
-  useEffect(() => {
-    function getRelease() {
-      let releasingAnime = [];
-      let progress = [];
-      release.map((list) => {
-        list.entries.map((entry) => {
-          if (entry.media.status === "RELEASING") {
-            releasingAnime.push(entry.media);
-          }
-
-          progress.push(entry);
-        });
-      });
-      setReleaseData(releasingAnime);
-      setProg(progress);
-    }
-    getRelease();
-  }, [release]);
-
-  const [list, setList] = useState(null);
-  const [planned, setPlanned] = useState(null);
-  const [greeting, setGreeting] = useState("");
-
-  const [prog, setProg] = useState(null);
-
-  const popular = populars?.data;
-  const data = detail.data[0];
-
-  useEffect(() => {
-    const time = new Date().getHours();
-    let greeting = "";
-
-    if (time >= 5 && time < 12) {
-      greeting = "Good morning";
-    } else if (time >= 12 && time < 18) {
-      greeting = "Good afternoon";
-    } else if (time >= 18 && time < 22) {
-      greeting = "Good evening";
-    } else if (time >= 22 || time < 5) {
-      greeting = "Good night";
-    }
-
-    setGreeting(greeting);
-
-    async function userData() {
-      if (!sessions) return;
-      const getMedia =
-        current.filter((item) => item.status === "CURRENT")[0] || null;
-      const list = getMedia?.entries
-        .map(({ media }) => media)
-        .filter((media) => media);
-
-      const planned = plan?.[0]?.entries
-        .map(({ media }) => media)
-        .filter((media) => media);
-
-      if (list) {
-        setList(list.reverse());
-      }
-      if (planned) {
-        setPlanned(planned.reverse());
-      }
-    }
-    userData();
-  }, [sessions, current, plan]);
+  // );
 
   return (
     <>
       <Head>
-        <title>Moopa</title>
-        <meta charSet="UTF-8"></meta>
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta
-          name="twitter:title"
-          content="Moopa - Free Anime and Manga Streaming"
-        />
-        <meta
-          name="twitter:description"
-          content="Discover your new favorite anime or manga title! Moopa offers a vast library of high-quality content, accessible on multiple devices and without any interruptions. Start using Moopa today!"
-        />
-        <meta
-          name="twitter:image"
-          content="https://cdn.discordapp.com/attachments/1084446049986420786/1093300833422168094/image.png"
-        />
+      
         <link rel="icon" href="/c.svg" />
       </Head>
+      <div className="bg-primary">
+        <Navbar />
 
-      <MobileNav sessions={sessions} />
 
-      <div className="h-auto w-screen bg-[#141519] text-[#dbdcdd] ">
-        <Navigasi />
-        <SearchBar />
-        {/* PC / TABLET */}
-        <div className=" hidden justify-center lg:flex my-16">
-          <div className="relative grid grid-rows-2 items-center lg:flex lg:h-[467px] lg:w-[80%] lg:justify-between">
-            <div className="row-start-2 flex h-full flex-col gap-7 lg:w-[55%] lg:justify-center">
-              <h1 className="w-[85%] font-outfit font-extrabold lg:text-[34px] line-clamp-2">
-                {data.title.english || data.title.romaji || data.title.native}
+
+        {/* Banner */}
+
+     
+        {/* Banner Close */}
+        <div className="min-h-screen mt-10 mb-14 text-white items-center gap-5 xl:gap-0 flex flex-col">
+          <div className="w-screen px-10 xl:w-[80%] xl:h-[10rem] flex text-center xl:items-end xl:pb-10 justify-center lg:gap-7 xl:gap-10 gap-3 font-karla font-light">
+            <div className="text-start">
+              <h1 className="font-bold xl:pb-5 pb-3 hidden lg:block text-md pl-1 font-outfit">
+                TITLE
               </h1>
-              <p
-                className="font-roboto font-light lg:text-[18px] line-clamp-5"
-                dangerouslySetInnerHTML={{ __html: data?.description }}
+              <input
+                className="xl:w-[297px] md:w-[297px] lg:w-[230px] xl:h-[46px] h-[35px] xxs:w-[230px] xs:w-[280px] bg-secondary rounded-[10px] font-karla font-light text-[#ffffff89] text-center"
+                placeholder="search here..."
+                type="text"
+                onKeyDown={handleKeyDown}
+                ref={inputRef}
               />
+            </div>
 
-              <div className="lg:pt-5">
-                <Link
-                  href={`/en/anime/${data.id}`}
-                  legacyBehavior
-                  className="flex"
+            {/* TYPE */}
+            <div className="hidden lg:block text-start">
+              <h1 className="font-bold xl:pb-5 pb-3 text-md pl-1 font-outfit">
+                TYPE
+              </h1>
+              <div className="relative">
+                <select
+                  className="xl:w-[297px] xl:h-[46px] lg:h-[35px] lg:w-[230px] bg-secondary rounded-[10px] justify-between flex items-center text-center appearance-none"
+                  value={type}
+                  onChange={(e) => handleTipe(e)}
                 >
-                  <a className="rounded-sm p-3 text-md font-karla font-light ring-1 ring-[#FF7F57]">
-                    START WATCHING
-                  </a>
-                </Link>
+                  {types.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none" />
               </div>
             </div>
-            <div className="z-10 row-start-1 flex justify-center ">
-              <div className="relative  lg:h-[467px] lg:w-[322px] lg:scale-100">
-                <div className="absolute bg-gradient-to-t from-[#141519] to-transparent lg:h-[467px] lg:w-[322px]" />
 
-                <Image
-                  draggable={false}
-                  src={data.coverImage?.extraLarge || data.image}
-                  alt={`alt for ${data.title.english || data.title.romaji}`}
-                  width={460}
-                  height={662}
-                  priority
-                  className="rounded-tl-xl rounded-tr-xl object-cover bg-blend-overlay lg:h-[467px] lg:w-[322px]"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* {!sessions && (
-          <h1 className="font-bold font-karla mx-5 text-[32px] mt-2 lg:mx-24 xl:mx-36">
-            {greeting}!
-          </h1>
-        )} */}
-        {sessions && (
-          <div className="flex items-center justify-center lg:bg-none mt-4 lg:mt-0 w-screen">
-            <div className="lg:w-[85%] w-screen px-5 lg:px-0 lg:text-4xl flex items-center gap-3 text-2xl font-bold font-karla">
-              {greeting},<h1 className="lg:hidden">{sessions?.user.name}</h1>
-              <button
-                onClick={() => signOut()}
-                className="hidden text-center relative lg:flex justify-center group"
-              >
-                {sessions?.user.name}
-                <span className="absolute text-sm z-50 w-20 text-center bottom-11 text-white shadow-lg opacity-0 bg-secondary p-1 rounded-md font-karla font-light invisible group-hover:visible group-hover:opacity-100 duration-300 transition-all">
-                  Sign Out
-                </span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="lg:mt-16 mt-5 flex flex-col items-center">
-          <motion.div
-            className="w-screen flex-none lg:w-[87%]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, staggerChildren: 0.2 }} // Add staggerChildren prop
-          >
-            {sessions && releaseData?.length > 0 && (
-              <motion.div // Add motion.div to each child component
-                key="onGoing"
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <Content
-                  ids="onGoing"
-                  section="On-Going Anime"
-                  data={releaseData}
-                  og={prog}
-                  userName={sessions?.user?.name}
-                />
-              </motion.div>
-            )}
-
-            {sessions && list?.length > 0 && (
-              <motion.div // Add motion.div to each child component
-                key="listAnime"
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <Content
-                  ids="listAnime"
-                  section="Your Watch List"
-                  data={list}
-                  og={prog}
-                  userName={sessions?.user?.name}
-                />
-              </motion.div>
-            )}
-
-            {/* SECTION 2 */}
-            {sessions && planned?.length > 0 && (
-              <motion.div // Add motion.div to each child component
-                key="plannedAnime"
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <Content
-                  ids="plannedAnime"
-                  section="Your Plan"
-                  data={planned}
-                  userName={sessions?.user?.name}
-                />
-              </motion.div>
-            )}
-
-            {/* SECTION 3 */}
-            {detail && (
-              <motion.div // Add motion.div to each child component
-                key="trendingAnime"
-                initial={{ y: 20, opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                viewport={{ once: true }}
-              >
-                <Content
-                  ids="trendingAnime"
-                  section="Trending Now"
-                  data={detail.data}
-                />
-              </motion.div>
-            )}
-
-            {/* Schedule */}
-            {anime.length > 0 && (
-              <motion.div // Add motion.div to each child component
-                key="schedule"
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <Schedule
-                  data={anime[0]}
-                  time={{
-                    days: days || 0,
-                    hours: hours || 0,
-                    minutes: minutes || 0,
-                    seconds: seconds || 0,
+            {/* SORT */}
+            <div className="hidden lg:block text-start">
+              <h1 className="font-bold xl:pb-5 lg:pb-3 text-md pl-1 font-outfit">
+                SORT
+              </h1>
+              <div className="relative">
+                <select
+                  className="xl:w-[297px] xl:h-[46px] lg:h-[35px] lg:w-[230px] bg-secondary rounded-[10px] flex items-center text-center appearance-none"
+                  onChange={(e) => {
+                    setSelectedSort(e.target.value);
+                    setData(null);
                   }}
-                  scheduleData={schedules}
-                />
-              </motion.div>
-            )}
+                >
+                  <option value={["POPULARITY_DESC"]}>Sort By</option>
+                  {sorts.map((sort) => (
+                    <option key={sort.value} value={sort.value}>
+                      {sort.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none" />
+              </div>
+            </div>
 
-            {/* SECTION 4 */}
-            {popular && (
-              <motion.div // Add motion.div to each child component
-                key="popularAnime"
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
+            {/* OPTIONS */}
+            <div className="flex lg:gap-7 text-center gap-3 items-end">
+              <div
+                className="xl:w-[73px] w-[50px] xl:h-[46px] h-[35px] bg-secondary rounded-[10px]  justify-center flex items-center cursor-pointer hover:bg-[#272b35] transition-all duration-300 group"
+                onClick={handleVisible}
               >
-                <Content
-                  ids="popularAnime"
-                  section="Popular Anime"
-                  data={popular}
-                />
-              </motion.div>
-            )}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6 group-hover:stroke-action"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"
+                  />
+                </svg>
+              </div>
 
-            <motion.div // Add motion.div to each child component
-              key="Genres"
-              initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-            >
-              <Genres />
-            </motion.div>
-          </motion.div>
+              {/* TRASH ICON */}
+              <div
+                className="xl:w-[73px] w-[50px] xl:h-[46px] h-[35px] bg-secondary rounded-[10px]  justify-center flex items-center cursor-pointer hover:bg-[#272b35] transition-all duration-300 group"
+                onClick={trash}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6 group-hover:stroke-action"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+
+          {/* Home Section */}
+
+<Link href="/en/search/trending/">  <div className="bg-blue-400 cursor-pointer pr-20 pl-20 pt-5 pb-5 text-2xl rounded-lg">
+          Visit Website
+        </div></Link>
+      
+        <div  className="pr-20 pl-20 text-center pt-10 indexcontent" dangerouslySetInnerHTML={{ __html: dataapi?.website_content }} />
         </div>
+        <Footer />
       </div>
-      <Footer />
     </>
   );
-}
-
-export async function getServerSideProps(context) {
-  const session = await getServerSession(context.req, context.res, authOptions);
-
-  const trendingDetail = await aniListData({
-    sort: "TRENDING_DESC",
-    page: 1,
-  });
-  const popularDetail = await aniListData({
-    sort: "POPULARITY_DESC",
-    page: 1,
-  });
-  const genreDetail = await aniListData({ sort: "TYPE", page: 1 });
-
-  const upComing = await getUpcomingAnime();
-
-  return {
-    props: {
-      genre: genreDetail.props,
-      detail: trendingDetail.props,
-      populars: popularDetail.props,
-      sessions: session,
-      upComing,
-    },
-  };
 }

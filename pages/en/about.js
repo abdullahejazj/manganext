@@ -7,12 +7,12 @@ export default function About() {
   return (
     <>
       <Head>
-        <title>Moopa - About</title>
+        
         <meta name="about" content="About this web" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/c.svg" />
       </Head>
-      <Layout>
+      {/* <Layout>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -51,7 +51,7 @@ export default function About() {
             </Link>
           </div>
         </motion.div>
-      </Layout>
+      </Layout> */}
     </>
   );
 }

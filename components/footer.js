@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState ,useContext} from "react";
 import { useRouter } from "next/router";
 import { parseCookies, setCookie } from "nookies";
+import DataContext from "../context/DataContext";
 
 function Footer() {
   const { data: session, status } = useSession();
   const [year, setYear] = useState(new Date().getFullYear());
   const [season, setSeason] = useState(getCurrentSeason());
-
+  const data = useContext(DataContext);
   const [lang, setLang] = useState("en");
   const [checked, setChecked] = useState(false);
   const [cookie, setCookies] = useState(null);
@@ -56,12 +57,11 @@ function Footer() {
         <div className="flex items-center gap-24">
           <div className="lg:flex grid items-center lg:gap-10 gap-3">
             {/* <h1 className="font-outfit text-[2.56rem]">moopa</h1> */}
-            <h1 className="font-outfit text-[40px]">moopa</h1>
+            <h1 className="font-outfit text-[40px]">{data?.website_title}</h1>
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-1">
                 <p className="flex items-center gap-1 font-karla lg:text-[0.81rem] text-[0.7rem] text-[#CCCCCC]">
-                  &copy; {new Date().getFullYear()} moopa.live | Website Made by
-                  Factiven
+                  &copy; {new Date().getFullYear()} {data?.website_title}
                 </p>
                 <p className="font-karla lg:text-[0.8rem] text-[0.65rem] text-[#9c9c9c]  lg:w-[520px] italic">
                   This site does not store any files on our server, we only
@@ -69,26 +69,7 @@ function Footer() {
                 </p>
               </div>
 
-              <label className="flex items-center relative w-max cursor-pointer select-none text-txt">
-                <span className="text-base text-[#cccccc] font-inter font-semibold mr-3">
-                  Lang
-                </span>
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => switchLang()}
-                  className="appearance-none transition-colors cursor-pointer w-14 h-5 rounded-full focus:outline-none  focus:ring-offset-2 focus:ring-offset-black focus:ring-action bg-secondary"
-                />
-                <span className="absolute font-medium text-xs uppercase right-2 text-action">
-                  {" "}
-                  EN{" "}
-                </span>
-                <span className="absolute font-medium text-xs uppercase right-[2.1rem] text-action">
-                  {" "}
-                  ID{" "}
-                </span>
-                <span className="w-6 h-6 right-[2.1rem] absolute rounded-full transform transition-transform bg-gray-200" />
-              </label>
+             
             </div>
           </div>
           {/* <div className="lg:hidden lg:block">
@@ -104,51 +85,13 @@ function Footer() {
         <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:gap-[9.06rem] text-[#a7a7a7] text-sm lg:text-end">
           <div className="flex flex-col gap-10 font-karla font-bold lg:flex-row lg:gap-[5.94rem]">
             <ul className="flex flex-col gap-y-[0.7rem] ">
-              <li className="cursor-pointer hover:text-action">
-                <Link
-                  href={`/${lang}/search/anime?season=${season}&seasonYear=${year}`}
-                >
-                  This Season
-                </Link>
-              </li>
-              <li className="cursor-pointer hover:text-action">
-                <Link href={`/${lang}/search/anime`}>Popular Anime</Link>
-              </li>
+            
               <li className="cursor-pointer hover:text-action">
                 <Link href={`/${lang}/search/manga`}>Popular Manga</Link>
               </li>
-              {status === "loading" ? (
-                <p>Loading...</p>
-              ) : session ? (
-                <li className="cursor-pointer hover:text-action">
-                  <Link href={`/${lang}/profile/${session?.user?.name}`}>
-                    My List
-                  </Link>
-                </li>
-              ) : (
-                <li className="hover:text-action">
-                  <button onClick={() => signIn("AniListProvider")}>
-                    Login
-                  </button>
-                </li>
-              )}
+             
             </ul>
-            <ul className="flex flex-col gap-y-[0.7rem]">
-              <li className="cursor-pointer hover:text-action">
-                <Link href={`/${lang}/search/anime`}>Movies</Link>
-              </li>
-              <li className="cursor-pointer hover:text-action">
-                <Link href={`/${lang}/search/anime`}>TV Shows</Link>
-              </li>
-              <li className="cursor-pointer hover:text-action">
-                <Link href={`/${lang}/dmca`}>DMCA</Link>
-              </li>
-              <li className="cursor-pointer hover:text-action">
-                <Link href="https://github.com/DevanAbinaya/Ani-Moopa">
-                  Github
-                </Link>
-              </li>
-            </ul>
+          
           </div>
         </div>
       </div>

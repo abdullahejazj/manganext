@@ -32,7 +32,7 @@ const genre = [
   "Thriller",
 ];
 
-const types = ["ANIME", "MANGA"];
+const types = [ "MANGA"];
 
 const sorts = [
   { name: "Title", value: "TITLE_ROMAJI" },
@@ -59,39 +59,6 @@ export default function Card() {
   const query = router.query;
   gr = query.genres;
 
-  if (query.param !== "anime" && query.param !== "manga") {
-    hasil = query.param;
-  } else if (query.param === "anime") {
-    hasil = null;
-    tipe = "ANIME";
-    if (
-      query.season !== "WINTER" &&
-      query.season !== "SPRING" &&
-      query.season !== "SUMMER" &&
-      query.season !== "FALL"
-    ) {
-      s = undefined;
-      y = NaN;
-    } else {
-      s = query.season;
-      y = parseInt(query.seasonYear);
-    }
-  } else if (query.param === "manga") {
-    hasil = null;
-    tipe = "MANGA";
-    if (
-      query.season !== "WINTER" &&
-      query.season !== "SPRING" &&
-      query.season !== "SUMMER" &&
-      query.season !== "FALL"
-    ) {
-      s = undefined;
-      y = NaN;
-    } else {
-      s = query.season;
-      y = parseInt(query.seasonYear);
-    }
-  }
 
   // console.log(tags);
 
@@ -107,6 +74,27 @@ export default function Card() {
   const [page, setPage] = useState(1);
   const [nextPage, setNextPage] = useState(true);
 
+
+  useEffect(() => {
+    const { param } = router.query;
+    let sortValue;
+
+    if (param === "trending") {
+      sortValue = "TRENDING_DESC";
+      setSelectedType("MANGA"); // Set the default type for "trending"
+    } else if (param === "popular") {
+      sortValue = "POPULARITY_DESC";
+      setSelectedType("MANGA"); // Set the default type for "popular"
+    } else {
+      sortValue = "TITLE_ROMAJI"; // Set the default sort for other parameters
+    }
+
+    setSelectedSort(sortValue);
+
+    // Call the function to fetch data based on the URL params
+    advance();
+  }, [router.query]);
+  
   async function advance() {
     setLoading(true);
     const data = await aniAdvanceSearch({
@@ -197,7 +185,7 @@ export default function Card() {
   return (
     <>
       <Head>
-        <title>Moopa - search</title>
+       
         <link rel="icon" href="/c.svg" />
       </Head>
       <div className="bg-primary">
@@ -439,7 +427,7 @@ export default function Card() {
                             height={500}
                           />
                         </Link>
-                        <Link href={`/en/anime/${anime.id}`}>
+                        <Link href={`/en/manga/${anime.id}`}>
                           <h1 className="font-outfit font-bold xl:text-base text-[15px] pt-4 line-clamp-2">
                             {anime.status === "RELEASING" ? (
                               <span className="dots bg-green-500" />

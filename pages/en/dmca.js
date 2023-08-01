@@ -5,23 +5,14 @@ export default function DMCA() {
   return (
     <>
       <Head>
-        <title>Moopa - DMCA</title>
+     
         <meta name="DMCA" content="DMCA" />
         <meta property="og:title" content="DMCA" />
-        <meta
-          property="og:description"
-          content="Moopa.live is committed to respecting the intellectual
-                  property rights of others and complying with the Digital
-                  Millennium Copyright Act (DMCA)."
-        />
-        <meta
-          property="og:image"
-          content="https://cdn.discordapp.com/attachments/1068758633464201268/1081591948705546330/logo.png"
-        />
+       
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/c.svg" />
       </Head>
-      <Layout>
+      {/* <Layout>
         <div className="min-h-screen z-20 flex w-screen justify-center items-center">
           <div className="w-[75%] text-2xl gap-7 flex flex-col my-[10rem]">
             <div className="flex">
@@ -103,7 +94,7 @@ export default function DMCA() {
             </div>
           </div>
         </div>
-      </Layout>
+      </Layout> */}
     </>
   );
 }

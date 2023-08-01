@@ -358,3 +358,16 @@ pre code {
     opacity: 0;
   }
 }
+
+
+.indexcontent h2 {
+  font-size: 30px;
+  padding: 1rem 0 1rem 0;
+  text-align: center;
+}
+
+.indexcontent p {
+  line-height: 1.5rem;
+  padding: 0.8rem 0 0.8rem 0;
+  text-align: center;
+}
