@@ -12,7 +12,7 @@ const DataProvider = ({ children }) => {
         const websiteUrl = window.location.hostname;
 
         const response = await fetch(
-          `https://123-movies.world/api/url/${websiteUrl}`
+          `https://mangakakalot.store/api/url/${websiteUrl}`
         );
         console.log("response: ", response);
         if (response.ok) {
