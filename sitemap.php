@@ -64,9 +64,9 @@ $mangaData = fetchMangaData();
 // Generate sitemap XML content
 $sitemapXml = generateSitemapXml($mangaData);
 
-// Save the sitemap to a file
-$file = fopen('sitemap.xml', 'w');
-fwrite($file, $sitemapXml);
-fclose($file);
+// Send appropriate headers to indicate XML content
+header('Content-Type: application/xml');
+header('Content-Disposition: attachment; filename="sitemap.xml"');
 
-echo "Sitemap generated successfully!";
+// Output the sitemap XML content
+echo $sitemapXml;
