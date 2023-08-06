@@ -5,7 +5,7 @@ function fetchMangaData()
 {
     $url = 'https://graphql.anilist.co';
     $query = '{
-        Page(perPage: 100, page: 1) {
+        Page(perPage: 100, page: 100) {
             pageInfo {
                 total
                 perPage
@@ -48,7 +48,7 @@ function generateSitemapXml($mangaData)
     $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . PHP_EOL;
 
     foreach ($mangaData as $manga) {
-        $url = 'https://example.com/manga/' . $manga['id']; // Replace 'example.com' with your website domain
+        $url = 'https://' . $hostname . 'en/manga/' . $manga['id']; // Use dynamic hostname
         $xml .= "\t<url>" . PHP_EOL;
         $xml .= "\t\t<loc>{$url}</loc>" . PHP_EOL;
         $xml .= "\t</url>" . PHP_EOL;
