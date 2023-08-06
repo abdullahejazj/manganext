@@ -32,7 +32,7 @@ const genre = [
   "Thriller",
 ];
 
-const types = [ "MANGA"];
+const types = ["MANGA"];
 
 const sorts = [
   { name: "Title", value: "TITLE_ROMAJI" },
@@ -59,7 +59,6 @@ export default function Card() {
   const query = router.query;
   gr = query.genres;
 
-
   // console.log(tags);
 
   const [search, setQuery] = useState(hasil);
@@ -73,7 +72,6 @@ export default function Card() {
 
   const [page, setPage] = useState(1);
   const [nextPage, setNextPage] = useState(true);
-
 
   useEffect(() => {
     const { param } = router.query;
@@ -94,7 +92,7 @@ export default function Card() {
     // Call the function to fetch data based on the URL params
     advance();
   }, [router.query]);
-  
+
   async function advance() {
     setLoading(true);
     const data = await aniAdvanceSearch({
@@ -185,7 +183,6 @@ export default function Card() {
   return (
     <>
       <Head>
-       
         <link rel="icon" href="/c.svg" />
       </Head>
       <div className="bg-primary">
@@ -415,7 +412,7 @@ export default function Card() {
                           href={
                             anime.format === "MANGA" || anime.format === "NOVEL"
                               ? `/en/manga/${anime.id}`
-                              : `/en/anime/${anime.id}`
+                              : `/en/manga/${anime.id}`
                           }
                           className=""
                         >
